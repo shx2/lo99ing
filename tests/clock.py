@@ -1,9 +1,7 @@
 #! /usr/bin/env python3
 
 import lo99ing
-import os
 import datetime
-import pathlib
 
 
 class ManualClock:
@@ -16,10 +14,6 @@ class ManualClock:
 
 
 def main():
-
-    logdir = os.path.splitext(__file__)[0] + '_output'
-    pathlib.Path(logdir).mkdir(exist_ok=True)
-
     logger = lo99ing.get_logger('LOGGER1')
 
     logger.info('<-- 1 local time')

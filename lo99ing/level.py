@@ -68,7 +68,7 @@ class LogLevelManager:
     def clear_override(self, name):
         self.overrides.pop(name, None)
 
-    def get_effective_level(self, name):
+    def get_effective(self, name):
         try:
             return self.overrides[name]
         except KeyError:
@@ -105,7 +105,7 @@ def set_log_level_override(name, level):
 
         is_initialized = log_level_manager.has_initial(name)
         if is_initialized:
-            eff_level = log_level_manager.get_effective_level(name)
+            eff_level = log_level_manager.get_effective(name)
             set_log_level(name, eff_level)
 
 

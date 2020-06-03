@@ -26,8 +26,8 @@ logging.root.setLevel(logging.NOTSET)
 for logger_name, logger in logging.Logger.manager.loggerDict.items():
     if logger == logging.root or getattr(logger, 'level', object()) != logging.NOTSET:
         continue
-    log_level_manager.set_initial(logger_name, 'warning')
-    set_log_level(logger_name, log_level_manager.get_effective_level(logger_name))
+    log_level_manager.set_initial(logger_name, logging.WARNING)
+    set_log_level(logger_name, log_level_manager.get_effective(logger_name))
 
 
 ################################################################################

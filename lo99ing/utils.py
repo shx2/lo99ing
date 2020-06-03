@@ -52,6 +52,9 @@ def get_logger(name, level=None, propagate=True):
                 # the logger was created before importing lo99ing
                 if cur_level == logging.NOTSET:
                     # a Logger with no level set. use the level passed by the caller (if any)
+                    # NOTE this should never happen before all loggers created before importing
+                    # lo99ing get their level in _bootstrap, and all logger created after get their
+                    # level in Lo99er.__init__()
                     initial_level = level
                 else:
                     # a Logger with level already set. ignore level passed by the caller (if any)
@@ -61,7 +64,7 @@ def get_logger(name, level=None, propagate=True):
                 log_level_manager.set_initial(name, initial_level)
                 # effective level can be different than level if set_log_level_override(name, ...)
                 # is called before first call to get_logger(name, ...)
-                effective_level = log_level_manager.get_effective_level(name)
+                effective_level = log_level_manager.get_effective(name)
                 set_log_level(name, effective_level)
 
             logger.propagate = propagate
