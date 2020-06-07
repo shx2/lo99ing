@@ -75,11 +75,15 @@ def get_logger(name, level=None, propagate=True):
     return logger
 
 
-def get_file_logger(name, filename, level=None, **kwargs):
-    """ Create an "independent" logger which writes to a file. """
+def get_file_logger(name, filename, level=None, rotate=False, **kwargs):
+    """
+    Create an "independent" logger which writes to a file only.
+    If rotate=True, will create a daily-rotating logger (filename should contain '*',
+    which is replaced with the date).
+    """
     logger = get_logger(name, level, propagate=False)
     disable_stderr(logger)
-    enable_file(filename, logger=logger, **kwargs)
+    enable_file(filename, logger=logger, rotate=rotate, **kwargs)
     return logger
 
 

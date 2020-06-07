@@ -5,6 +5,8 @@ Definition of logger handlers, and tools for manipulating logger handlers.
 import logging
 import logging.handlers
 import sys
+import time
+import datetime
 import traceback
 
 from .formatter import formatter
@@ -50,6 +52,68 @@ class FileHandler(_ErrorHandlerMixin, logging.FileHandler):
     pass
 
 
+class DailyRotatingFileHandler(_ErrorHandlerMixin, logging.handlers.TimedRotatingFileHandler):
+    """
+    A customized daily TimedRotatingFileHandler.
+
+    The class takes a filename_pattern, which is a path containing a '*' date-placeholder,
+    which is replaced with the appropriate date, in YYYYMMDD format.
+
+    This class always uses: when='MIDNIGHT', backupCount=0, utc=True, atTime=None.
+    Since utc=True, it doesn't hanlde DST changes.
+
+    """
+
+    DATE_FORMAT = '%Y%m%d'
+
+    def __init__(self, filename_pattern, **kwargs):
+        """
+        :param filename_pattern: a path (str or Path), with a single '*' date-placeholder
+        """
+        if filename_pattern:
+            filename_pattern = str(filename_pattern)  # support Path
+        fptn = filename_pattern
+        filename_pattern = filename_pattern.replace('*', self.DATE_FORMAT)
+        if fptn == filename_pattern:
+            raise ValueError('filename_pattern must contain "*"', filename_pattern)
+        self.filename_pattern = filename_pattern
+        for k in ['when', 'utc', 'backupCount', 'atTime']:
+            if k in kwargs:
+                raise TypeError('arg not supported', k)
+        first_filename = self.get_filename_for_time(self.now())
+        logging.handlers.TimedRotatingFileHandler.__init__(
+            self, first_filename, when='MIDNIGHT', utc=True, **kwargs)
+
+        # making sure super doesn't use these, because we don't want it to.
+        self.suffix = None
+        self.extMatch = None
+
+    def doRollover(self):
+
+        # close current file
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+        # write to a new file
+        self.baseFilename = self.get_filename_for_time(self.now())
+        self.mode = 'a'
+        self.stream = self._open()
+
+        # compute next
+        currentTime = int(time.time())
+        newRolloverAt = self.computeRollover(currentTime)
+        while newRolloverAt <= currentTime:
+            newRolloverAt = newRolloverAt + self.interval
+        self.rolloverAt = newRolloverAt
+
+    def now(self):
+        return datetime.datetime.utcnow()
+
+    def get_filename_for_time(self, dt):
+        return dt.strftime(self.filename_pattern)
+
+
 ################################################################################
 # globals
 
@@ -86,10 +150,17 @@ def _is_stderr_handler(handler):
     return isinstance(handler, logging.StreamHandler) and handler.stream == sys.stderr
 
 
-def enable_file(filename, logger=None, file_handler=None, **kwargs):
-    """ Adds a FileHandler to root logger, to enable logging to ``filename``. """
+def enable_file(filename, logger=None, file_handler=None, rotate=False, **kwargs):
+    """
+    Adds a FileHandler to root logger, to enable logging to ``filename``.
+    If rotate=True, will create a daily-rotating file handler (filename should contain '*',
+    which is replaced with the date).
+    """
     if file_handler is None:
-        file_handler = FileHandler(filename=filename, **kwargs)
+        if rotate:
+            file_handler = DailyRotatingFileHandler(filename, **kwargs)
+        else:
+            file_handler = FileHandler(filename, **kwargs)
     return _add_logging_handler(file_handler, logger=logger)
 
 
