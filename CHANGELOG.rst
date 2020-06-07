@@ -6,6 +6,7 @@
 * `logger.exception()`` automatically extracts and prints exception attributes
 * when logging an exception object, automatically adds exception type
 * if logging messages fails formatting, also logs the location of the problematic call
+* daily log rotation
 * ``get_logger``
 * ``enable_file``, ``get_file_logger``
 * ``enable_stderr``, ``disable_stderr``
