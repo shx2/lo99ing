@@ -48,6 +48,13 @@ class Lo99er(logging.Logger):
         for attr, v in exc_kwargs.items():
             self.error('\t%s.%s = %s' % (exc_obj.__class__.__name__, attr, oneline(v)))
 
+    def getChild(self, suffix):
+        from lo99ing import get_logger
+
+        if self.root is not self:
+            suffix = '.'.join((self.name, suffix))
+        return get_logger(suffix)  # using get_logger() instead of self.manager.getLogger()
+
     ################################################################################
     # log level
 
@@ -103,7 +110,7 @@ class Lo99er(logging.Logger):
                       args if args else '', kwargs if kwargs else '')
 
     ################################################################################
-    # utilities
+    # other
 
     def __repr__(self):
         return '<%s %r [%s]>' % (
