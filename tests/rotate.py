@@ -9,6 +9,9 @@ import pathlib
 from pprint import pprint
 
 
+UTC = True
+
+
 def main():
 
     logdir = os.path.splitext(__file__)[0] + '_output'
@@ -17,6 +20,9 @@ def main():
     logger = lo99ing.get_logger('LOGGER1')
 
     lo99ing.enable_file(pathlib.Path(logdir) / 'a_*_b.log', rotate=True)
+
+    if UTC:
+        lo99ing.use_utc()
 
     pprint(datetime.datetime.utcnow())
     pprint(logging.root.handlers[-1].stream)
