@@ -38,7 +38,7 @@ class Lo99er(logging.Logger):
         # get exc_info:
         if exc_info is None:
             exc_info = sys.exc_info()
-            _exc_type, exc_obj, _exc_tb = exc_info
+        _exc_type, exc_obj, _exc_tb = exc_info
 
         # call super:
         super().exception(msg, *args, exc_info=exc_info, **kwargs)
