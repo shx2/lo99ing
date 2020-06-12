@@ -35,10 +35,16 @@ class Lo99er(logging.Logger):
 
     def exception(self, msg, *args, exc_info=None, **kwargs):
 
-        # get exc_info:
-        if exc_info is None:
+        # get exc_info and exc_obj:
+        exc_obj = None
+        if exc_info is not None:
+            if isinstance(exc_info, BaseException):
+                exc_obj = exc_info
+            elif isinstance(exc_info, tuple):
+                exc_obj = exc_info[1]
+        if exc_obj is None:
             exc_info = sys.exc_info()
-        _exc_type, exc_obj, _exc_tb = exc_info
+            exc_obj = exc_info[1]
 
         # call super:
         super().exception(msg, *args, exc_info=exc_info, **kwargs)
