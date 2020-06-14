@@ -135,15 +135,22 @@ class _PrefixedAdapter(logging.LoggerAdapter):
             initial_prefix = self.logger.extra['prefix']
         except (AttributeError, KeyError):
             initial_prefix = ''
-        self.extra['prefix'] = '%s%s ' % (initial_prefix, self.extra['prefix'])
+        self.extra['prefix'] = '%s%s ' % (initial_prefix, self.prefix)
+
+    @property
+    def prefix(self):
+        return self.extra['prefix']
 
     def process(self, msg, kwargs):
-        return (self.extra['prefix'] + msg), kwargs
+        return (self.prefix + msg), kwargs
+
+    def __repr__(self):
+        return '<%s %r %s>' % (type(self).__name__, self.logger, self.prefix)
+
+    # make this more logger-like, for prefix chaining to work:
 
     def prefixed(self, prefix):
         return prefixed(self, prefix)
-
-    # make this more logger-like, for prefix chaining to work:
 
     @property
     def manager(self):
@@ -152,6 +159,16 @@ class _PrefixedAdapter(logging.LoggerAdapter):
     @property
     def _log(self):
         return self.logger._log
+
+    def getChild(self, *args, **kwargs):
+        child_logger = self.logger.getChild(*args, **kwargs)
+        return type(self)(child_logger, {'prefix': self.prefix})
+
+    def set_log_level_override(self, *args, **kwargs):
+        return self.logger.set_log_level_override(*args, **kwargs)
+
+    def TRACE(self, *args, **kwargs):
+        return self.logger.TRACE(*args, **kwargs)
 
 
 def prefixed(logger, prefix):
