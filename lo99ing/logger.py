@@ -108,12 +108,17 @@ class Lo99er(logging.Logger):
         Useful for "printf-debugging" (aka "trace-debugging").
         """
         try:
-            fn, lno, _, _ = self.findCaller()
+            fn, lno, _, _ = self._findCaller()
         except ValueError:
             fn, lno = "(unknown file)", 0
-        self.critical('TRACE %s:%s   %s   %s',
-                      fn, lno,
-                      args if args else '', kwargs if kwargs else '')
+
+        args_str = ''
+        if args:
+            args_str = '  '.join(repr(a) for a in args)
+        kwargs_str = ''
+        if kwargs:
+            kwargs_str = '  '.join('%s=%r' % item for item in kwargs.items())
+        self.critical('TRACE %s:%s   %s   %s', fn, lno, args_str, kwargs_str)
 
     ################################################################################
     # other
@@ -121,6 +126,11 @@ class Lo99er(logging.Logger):
     def __repr__(self):
         return '<%s %r [%s]>' % (
             type(self).__name__, self.name, logging.getLevelName(self.level))
+
+    def _findCaller(self, *args, **kwargs):
+        # NOTE: we don't call self.findCaller() directly from TRACE, because it only
+        # works if called from the "correct" relative depth from user's call.
+        return self.findCaller(*args, **kwargs)
 
 
 ################################################################################
