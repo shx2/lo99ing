@@ -107,10 +107,20 @@ class Lo99er(logging.Logger):
         A convenience method for logging current filename and line num (and optional extra info).
         Useful for "printf-debugging" (aka "trace-debugging").
         """
-        try:
-            fn, lno, _, _ = self._findCaller()
-        except ValueError:
-            fn, lno = "(unknown file)", 0
+        # TRACE is called by "user" caller, and must always call _TRACE(), which only works
+        # if called from the "correct" relative depth from user's call.
+        return self._TRACE(*args, **kwargs)
+
+    def _TRACE(self, *args, _caller_spec=None, **kwargs):
+        if _caller_spec is None:
+            try:
+                # NOTE: we must call self.findCaller() directly from TRACE, because it only
+                # works if called from the "correct" relative depth from user's call.
+                fn, lno, _, _ = self.findCaller()
+            except ValueError:
+                fn, lno = "(unknown file)", 0
+        else:
+            fn, lno, _, _ = _caller_spec
 
         args_str = ''
         if args:
@@ -126,12 +136,6 @@ class Lo99er(logging.Logger):
     def __repr__(self):
         return '<%s %r [%s]>' % (
             type(self).__name__, self.name, logging.getLevelName(self.level))
-
-    def _findCaller(self, *args, **kwargs):
-        # NOTE: we don't call self.findCaller() directly from TRACE, because it only
-        # works if called from the "correct" relative depth from user's call.
-        return self.findCaller(*args, **kwargs)
-
 
 ################################################################################
 # prefixed
@@ -178,7 +182,7 @@ class _PrefixedAdapter(logging.LoggerAdapter):
         return self.logger.set_log_level_override(*args, **kwargs)
 
     def TRACE(self, *args, **kwargs):
-        return self.logger.TRACE(*args, **kwargs)
+        return self.logger._TRACE(*args, **kwargs)
 
 
 def prefixed(logger, prefix):
