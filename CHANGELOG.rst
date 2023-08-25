@@ -1,3 +1,9 @@
+0.1.4
+-----
+* bug fix in ``prefixed``
+* no longer using nose
+* support py39, py310, py311
+
 0.1.3
 -----
 * bug fixes
