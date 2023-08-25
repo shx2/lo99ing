@@ -144,12 +144,7 @@ class _PrefixedAdapter(logging.LoggerAdapter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        try:
-            initial_prefix = self.logger.extra['prefix']
-        except (AttributeError, KeyError):
-            initial_prefix = ''
-        self.extra['prefix'] = '%s%s ' % (initial_prefix, self.prefix)
+        self.extra['prefix'] = '%s ' % (self.prefix, )
 
     @property
     def prefix(self):
